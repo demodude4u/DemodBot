@@ -17,7 +17,7 @@ import com.vectorcat.irc.event.IRCSendEvent;
 import com.vectorcat.irc.event.recv.IRCRecvRaw;
 import com.vectorcat.irc.event.send.IRCSendRaw;
 
-public class Main {
+public class DemodBotMain {
 
 	private static Object createEventLogger() {
 		return new Object() {

@@ -10,7 +10,7 @@ import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
-import com.vectorcat.irc.event.recv.IRCRecvCommandMessage;
+import com.vectorcat.irc.event.recv.IRCRecvDirectedMessage;
 
 public class CleverBotFeature {
 
@@ -35,12 +35,12 @@ public class CleverBotFeature {
 	}
 
 	@Subscribe
-	public void onCommand(IRCRecvCommandMessage event) throws Exception {
-		String say = event.getCommand();
+	public void onDirectedMessage(IRCRecvDirectedMessage event) throws Exception {
+		String message = event.getMessage();
 
 		ChatterBotSession session = getSession(event.getUser().getIdentifier());
 
-		String response = session.think(say);
+		String response = session.think(message);
 		if (event.getTarget().isChannel()) {
 			response = event.getUser() + ": " + response;
 		}
