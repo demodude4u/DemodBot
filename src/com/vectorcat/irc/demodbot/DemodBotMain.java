@@ -56,15 +56,17 @@ public class DemodBotMain {
 		IRCControl control = injector.getInstance(IRCControl.class);
 
 		// Initialize Features
+		injector.getInstance(ReJoinFeature.class);
 		injector.getInstance(CleverBotFeature.class);
+		injector.getInstance(SpellSuggestFeature.class);
 
-		Server server = control.getServer("irc.fyrechat.net", 6667, "TestBot",
+		Server server = control.getServer("irc.fyrechat.net", 6667, "DemodBot",
 				"password");
 		try {
 			// Initial actions
 			server.connect();
 
-			Channel channel = control.getChannel("#DemodLand");
+			Channel channel = control.getChannel("#Vana");
 			channel.join();
 
 			control.ignore("SolidSnake");

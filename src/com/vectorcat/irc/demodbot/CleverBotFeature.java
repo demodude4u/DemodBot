@@ -35,16 +35,17 @@ public class CleverBotFeature {
 	}
 
 	@Subscribe
-	public void onDirectedMessage(IRCRecvDirectedMessage event) throws Exception {
+	public void onDirectedMessage(IRCRecvDirectedMessage event)
+			throws Exception {
 		String message = event.getMessage();
+
+		if (!message.isEmpty() && message.trim().charAt(0) == '!') {
+			// Ignore Commands
+			return;
+		}
 
 		ChatterBotSession session = getSession(event.getUser().getIdentifier());
 
-		String response = session.think(message);
-		if (event.getTarget().isChannel()) {
-			response = event.getUser() + ": " + response;
-		}
-
-		event.getTarget().message(response);
+		event.getTarget().reply(event.getUser(), session.think(message));
 	}
 }
