@@ -11,8 +11,8 @@ import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.vectorcat.irc.Channel;
-import com.vectorcat.irc.IRCBannedFromChannelException;
 import com.vectorcat.irc.event.recv.IRCRecvKick;
+import com.vectorcat.irc.exception.IRCBannedFromChannelException;
 import com.vectorcat.irc.exception.IRCNoSuchChannelException;
 
 public class ReJoinFeature {
