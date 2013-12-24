@@ -7,12 +7,21 @@ import java.net.UnknownHostException;
 
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
+import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.vectorcat.irc.Channel;
 import com.vectorcat.irc.IRCControl;
 import com.vectorcat.irc.IRCModule;
 import com.vectorcat.irc.Server;
+import com.vectorcat.irc.demodbot.feature.AdminFeature;
+import com.vectorcat.irc.demodbot.feature.CleverBotFeature;
+import com.vectorcat.irc.demodbot.feature.ExperimentalFeature;
+import com.vectorcat.irc.demodbot.feature.HelpFeature;
+import com.vectorcat.irc.demodbot.feature.MailFeature;
+import com.vectorcat.irc.demodbot.feature.ReJoinFeature;
+import com.vectorcat.irc.demodbot.util.DPasteMessageSolution;
+import com.vectorcat.irc.demodbot.util.LongMessageSolution;
 import com.vectorcat.irc.event.IRCSendEvent;
 import com.vectorcat.irc.event.recv.IRCRecvRaw;
 import com.vectorcat.irc.event.send.IRCSendRaw;
@@ -47,7 +56,20 @@ public class DemodBotMain {
 
 	public static void main(String[] args) throws InterruptedException,
 			UnknownHostException, IOException {
-		Injector injector = Guice.createInjector(new IRCModule());
+		Injector injector = Guice.createInjector(new IRCModule(),
+				new AbstractModule() {
+					@Override
+					protected void configure() {
+						// bind(LongMessageSolution.class).to(
+						// PasteBinMessageSolution.class);
+						// bindConstant().annotatedWith(
+						// Names.named("Pastebin API Key")).to(
+						// "6042c1ee1fc8f498c24371b02a830097");
+
+						bind(LongMessageSolution.class).to(
+								DPasteMessageSolution.class);
+					}
+				});
 
 		EventBus bus = injector.getInstance(EventBus.class);
 
@@ -56,9 +78,13 @@ public class DemodBotMain {
 		IRCControl control = injector.getInstance(IRCControl.class);
 
 		// Initialize Features
+		AdminFeature adminFeature = injector.getInstance(AdminFeature.class);
+		adminFeature.addAdmins("Bui", "jtran", "Demod", "zinmirai");
+		injector.getInstance(HelpFeature.class);
 		injector.getInstance(ReJoinFeature.class);
 		injector.getInstance(CleverBotFeature.class);
-		injector.getInstance(SpellSuggestFeature.class);
+		injector.getInstance(MailFeature.class);
+		injector.getInstance(ExperimentalFeature.class);
 
 		Server server = control.getServer("irc.fyrechat.net", 6667, "DemodBot",
 				"password");
@@ -70,8 +96,6 @@ public class DemodBotMain {
 			channel.join();
 
 			control.ignore("SolidSnake");
-
-			// Can add more actions here, but might want to use sleep()
 
 		} catch (Exception e) {
 			e.printStackTrace();

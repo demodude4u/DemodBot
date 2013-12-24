@@ -1,4 +1,4 @@
-package com.vectorcat.irc.demodbot;
+package com.vectorcat.irc.demodbot.feature;
 
 import java.util.Map;
 
@@ -10,6 +10,8 @@ import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.vectorcat.irc.IRCState;
+import com.vectorcat.irc.demodbot.event.help.FeatureRollCall;
 import com.vectorcat.irc.event.recv.IRCRecvDirectedMessage;
 
 public class CleverBotFeature {
@@ -18,12 +20,15 @@ public class CleverBotFeature {
 
 	private final ChatterBot chatterBot;
 
+	private final IRCState state;
+
 	@Inject
-	CleverBotFeature(EventBus bus) throws Exception {
+	CleverBotFeature(EventBus bus, IRCState state) throws Exception {
+		this.state = state;
 		bus.register(this);
 
 		ChatterBotFactory factory = new ChatterBotFactory();
-		chatterBot = factory.create(ChatterBotType.JABBERWACKY);
+		chatterBot = factory.create(ChatterBotType.CLEVERBOT);
 	}
 
 	private ChatterBotSession getSession(String identity) {
@@ -44,8 +49,20 @@ public class CleverBotFeature {
 			return;
 		}
 
+		if (state.getMyUser().equals(event.getUser())) {
+			event.getTarget().message("Sorry, I was talking to myself there.");
+			return;
+		}
+
 		ChatterBotSession session = getSession(event.getUser().getIdentifier());
 
 		event.getTarget().reply(event.getUser(), session.think(message));
+	}
+
+	@Subscribe
+	public void onFeatureRollCall(FeatureRollCall event) {
+		event.getResponder().reply("ChatterBot Feature",
+				"When you talk to me, I respond using Jabberwacky.",
+				"... I may or may not be retarded.");
 	}
 }
