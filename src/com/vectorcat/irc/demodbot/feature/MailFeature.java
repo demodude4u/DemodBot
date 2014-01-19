@@ -1,6 +1,7 @@
 package com.vectorcat.irc.demodbot.feature;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -28,6 +29,7 @@ import com.google.common.collect.TreeMultimap;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.vectorcat.irc.Channel;
 import com.vectorcat.irc.IRCControl;
 import com.vectorcat.irc.IRCState;
@@ -44,7 +46,9 @@ import com.vectorcat.irc.event.recv.IRCRecvMessage;
 import com.vectorcat.irc.event.recv.IRCRecvNickChange;
 import com.vectorcat.irc.util.Arguments;
 
+@Singleton
 public class MailFeature {
+
 	@Data
 	@EqualsAndHashCode(exclude = { "message" })
 	private static class Mail implements Comparable<Mail> {
@@ -65,17 +69,18 @@ public class MailFeature {
 	private static final String PERSISTANCEFILE = "mail.data";
 
 	private static final String PERSISTANCEMAGIC = "BOTMAIL";
-
 	private final IRCControl control;
 	private final IRCState state;
-	private final LongMessageSolution longMessageSolution;
 
+	private final LongMessageSolution longMessageSolution;
 	TreeMultimap<User, Mail> incoming = TreeMultimap.create();
 	TreeMultimap<User, Mail> outgoing = TreeMultimap.create();
+
 	Set<Mail> allMail = Sets.newLinkedHashSet();
 
 	@Inject
-	MailFeature(EventBus bus, IRCControl control, IRCState state,
+	MailFeature(AdminFeature adminFeature, HelpFeature helpFeature,
+			EventBus bus, IRCControl control, IRCState state,
 			LongMessageSolution longMessageSolution) {
 		this.control = control;
 		this.state = state;
@@ -148,6 +153,8 @@ public class MailFeature {
 				incoming.get(mail.recipient).add(mail);
 				outgoing.get(mail.from).add(mail);
 			}
+		} catch (FileNotFoundException e) {
+			// Ignored, means there is no previous data
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

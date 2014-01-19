@@ -18,6 +18,7 @@ import com.google.common.collect.Multimaps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.vectorcat.irc.Target;
 import com.vectorcat.irc.User;
 import com.vectorcat.irc.demodbot.event.help.CommandRollCall;
@@ -26,6 +27,7 @@ import com.vectorcat.irc.demodbot.event.help.FeatureRollCall;
 import com.vectorcat.irc.demodbot.util.LongMessageSolution;
 import com.vectorcat.irc.event.recv.IRCRecvCommand;
 
+@Singleton
 public class HelpFeature {
 	@Data
 	private class FinishCommandCommands {

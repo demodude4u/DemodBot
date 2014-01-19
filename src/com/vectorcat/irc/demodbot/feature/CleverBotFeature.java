@@ -10,10 +10,12 @@ import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.vectorcat.irc.IRCState;
 import com.vectorcat.irc.demodbot.event.help.FeatureRollCall;
 import com.vectorcat.irc.event.recv.IRCRecvDirectedMessage;
 
+@Singleton
 public class CleverBotFeature {
 
 	private final Map<String, ChatterBotSession> sessions = Maps.newHashMap();
@@ -23,7 +25,8 @@ public class CleverBotFeature {
 	private final IRCState state;
 
 	@Inject
-	CleverBotFeature(EventBus bus, IRCState state) throws Exception {
+	CleverBotFeature(HelpFeature helpFeature, EventBus bus, IRCState state)
+			throws Exception {
 		this.state = state;
 		bus.register(this);
 

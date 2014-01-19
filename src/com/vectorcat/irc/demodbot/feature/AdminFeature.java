@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.vectorcat.irc.IRCControl;
 import com.vectorcat.irc.User;
 import com.vectorcat.irc.demodbot.event.AdminCommand;
@@ -13,6 +14,7 @@ import com.vectorcat.irc.demodbot.event.help.FeatureRollCall;
 import com.vectorcat.irc.event.recv.IRCRecvCommand;
 import com.vectorcat.irc.event.send.IRCSendRaw;
 
+@Singleton
 public class AdminFeature {
 
 	private final IRCControl control;
@@ -22,7 +24,7 @@ public class AdminFeature {
 	private final EventBus bus;
 
 	@Inject
-	AdminFeature(EventBus bus, IRCControl control) {
+	AdminFeature(HelpFeature helpFeature, EventBus bus, IRCControl control) {
 		this.bus = bus;
 		this.control = control;
 		bus.register(this);

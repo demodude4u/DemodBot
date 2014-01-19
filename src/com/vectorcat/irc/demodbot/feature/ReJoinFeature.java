@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.vectorcat.irc.Channel;
 import com.vectorcat.irc.IRCState;
 import com.vectorcat.irc.demodbot.event.help.FeatureRollCall;
@@ -17,6 +18,7 @@ import com.vectorcat.irc.event.recv.IRCRecvKick;
 import com.vectorcat.irc.exception.IRCBannedFromChannelException;
 import com.vectorcat.irc.exception.IRCNoSuchChannelException;
 
+@Singleton
 public class ReJoinFeature {
 
 	private final ExecutorService service = Executors.newCachedThreadPool();
@@ -24,7 +26,7 @@ public class ReJoinFeature {
 	private final IRCState state;
 
 	@Inject
-	ReJoinFeature(EventBus bus, IRCState state) {
+	ReJoinFeature(HelpFeature helpFeature, EventBus bus, IRCState state) {
 		this.state = state;
 		bus.register(this);
 	}

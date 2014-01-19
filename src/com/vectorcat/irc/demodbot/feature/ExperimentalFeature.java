@@ -3,12 +3,14 @@ package com.vectorcat.irc.demodbot.feature;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import com.vectorcat.irc.demodbot.event.help.FeatureRollCall;
 
+@Singleton
 public class ExperimentalFeature {
 
 	@Inject
-	ExperimentalFeature(EventBus bus) {
+	ExperimentalFeature(HelpFeature helpFeature, EventBus bus) {
 		bus.register(this);
 	}
 
