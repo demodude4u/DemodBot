@@ -7,6 +7,7 @@ import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
 import com.google.common.util.concurrent.AbstractExecutionThreadService;
+import com.google.common.util.concurrent.AbstractScheduledService;
 import com.google.common.util.concurrent.Service;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.google.inject.Inject;
@@ -23,6 +24,8 @@ import com.vectorcat.irc.event.recv.IRCRecvPart;
 @Singleton
 public class KeepAliveFeature {
 
+	public static final long CHECK_PERIOD_MILLIS = 1000 * 30;
+
 	private final IRCControl control;
 	private final IRCState state;
 
@@ -32,11 +35,29 @@ public class KeepAliveFeature {
 
 	@Inject
 	public KeepAliveFeature(HelpFeature helpFeature, EventBus bus,
-			IRCControl control, IRCState state) {
+			IRCControl control, final IRCState state) {
 		this.control = control;
 		this.state = state;
 
 		bus.register(this);
+
+		Service periodicCheckService = new AbstractScheduledService() {
+
+			@Override
+			protected void runOneIteration() throws Exception {
+				System.out.println("Check! "
+						+ (System.currentTimeMillis() - state
+								.getLastRecvTimeMillis()));
+				checkOrReconnect();
+			}
+
+			@Override
+			protected Scheduler scheduler() {
+				return Scheduler.newFixedDelaySchedule(CHECK_PERIOD_MILLIS,
+						CHECK_PERIOD_MILLIS, TimeUnit.MILLISECONDS);
+			}
+		};
+		periodicCheckService.startAsync();
 	}
 
 	private synchronized void checkOrReconnect() {
@@ -45,8 +66,7 @@ public class KeepAliveFeature {
 				reconnectService = new AbstractExecutionThreadService() {
 					@Override
 					protected void run() throws Exception {
-						while (control.isServerPresent()
-								&& !control.isConnected()) {
+						while (!control.isConnected()) {
 							Uninterruptibles.sleepUninterruptibly(1,
 									TimeUnit.SECONDS);
 							System.out.println("\tReconnecting...");

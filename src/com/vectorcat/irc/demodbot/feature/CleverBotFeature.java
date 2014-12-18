@@ -65,7 +65,7 @@ public class CleverBotFeature {
 	@Subscribe
 	public void onFeatureRollCall(FeatureRollCall event) {
 		event.getResponder().reply("ChatterBot Feature",
-				"When you talk to me, I respond using Jabberwacky.",
+				"When you talk to me, I respond using CleverBot.",
 				"... I may or may not be retarded.");
 	}
 }
