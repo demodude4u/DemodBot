@@ -131,7 +131,6 @@ public class HelpFeature {
 	@Subscribe
 	public void onFinishCommandFeatures(FinishCommandFeatures event) {
 		try {
-			System.out.println("??? " + event.getMessageMap().size());
 			List<String> messages = buildMessageMap("FEATURES",
 					event.getMessageMap());
 			URL url = longMessageSolution.provideSolution(messages,
@@ -185,7 +184,6 @@ public class HelpFeature {
 									}
 								})).build();
 				messageMap.putAll(name, formattedMessages);
-				System.out.println(messageMap.size());
 			}
 		};
 

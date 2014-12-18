@@ -15,6 +15,7 @@ import com.vectorcat.irc.demodbot.feature.AdminFeature;
 import com.vectorcat.irc.demodbot.feature.CleverBotFeature;
 import com.vectorcat.irc.demodbot.feature.ExperimentalFeature;
 import com.vectorcat.irc.demodbot.feature.KeepAliveFeature;
+import com.vectorcat.irc.demodbot.feature.LastSeenFeature;
 import com.vectorcat.irc.demodbot.feature.MailFeature;
 import com.vectorcat.irc.demodbot.feature.ReJoinFeature;
 import com.vectorcat.irc.demodbot.util.DPasteMessageSolution;
@@ -109,6 +110,7 @@ public class DemodBot extends AbstractIdleService implements Service {
 		injector.getInstance(KeepAliveFeature.class);
 		injector.getInstance(CleverBotFeature.class);
 		injector.getInstance(MailFeature.class);
+		injector.getInstance(LastSeenFeature.class);
 		injector.getInstance(ExperimentalFeature.class);
 
 		AdminFeature adminFeature = injector.getInstance(AdminFeature.class);

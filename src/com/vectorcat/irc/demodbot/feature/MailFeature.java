@@ -44,7 +44,6 @@ import com.vectorcat.irc.event.recv.IRCRecvCommand;
 import com.vectorcat.irc.event.recv.IRCRecvJoin;
 import com.vectorcat.irc.event.recv.IRCRecvMessage;
 import com.vectorcat.irc.event.recv.IRCRecvNickChange;
-import com.vectorcat.irc.util.Arguments;
 
 @Singleton
 public class MailFeature {
@@ -243,14 +242,15 @@ public class MailFeature {
 			String[] split = event.getArguments().toString().split(":", 2);
 			if (split.length <= 1) {
 				event.getTarget().reply(event.getUser(),
-						"Usage: !mail recipient1[ recipientN]* : message");
+						"Usage: !mail recipient : message");
 				return;
 			}
 
 			String message = split[1].trim();
 
-			List<String> recipientStrings = ImmutableList.copyOf(new Arguments(
-					split[0]));
+			// List<String> recipientStrings = ImmutableList.copyOf(new
+			// Arguments(split[0]));
+			List<String> recipientStrings = ImmutableList.of(split[0]);
 
 			Set<User> mailedRecipients = Sets.newLinkedHashSet();
 			for (String recipientString : recipientStrings) {
@@ -310,7 +310,7 @@ public class MailFeature {
 		Responder responder = event.getResponder();
 		responder
 				.reply("MAIL",
-						"!mail recipient1[ recipientN]* : message",
+						"!mail recipient : message",
 						"Mails the specified recipients the message when they are found available.",
 						"A user will be informed about their incoming mail when they first join ",
 						"the channel, or talk within the channel.",//

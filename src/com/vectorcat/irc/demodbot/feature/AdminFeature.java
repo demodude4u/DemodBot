@@ -8,10 +8,14 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.vectorcat.irc.IRCControl;
+import com.vectorcat.irc.IRCState;
 import com.vectorcat.irc.User;
 import com.vectorcat.irc.demodbot.event.AdminCommand;
 import com.vectorcat.irc.demodbot.event.help.FeatureRollCall;
 import com.vectorcat.irc.event.recv.IRCRecvCommand;
+import com.vectorcat.irc.event.send.IRCSendJoin;
+import com.vectorcat.irc.event.send.IRCSendMessage;
+import com.vectorcat.irc.event.send.IRCSendPart;
 import com.vectorcat.irc.event.send.IRCSendRaw;
 
 @Singleton
@@ -23,10 +27,14 @@ public class AdminFeature {
 
 	private final EventBus bus;
 
+	private final IRCState state;
+
 	@Inject
-	AdminFeature(HelpFeature helpFeature, EventBus bus, IRCControl control) {
+	AdminFeature(HelpFeature helpFeature, EventBus bus, IRCControl control,
+			IRCState state) {
 		this.bus = bus;
 		this.control = control;
+		this.state = state;
 		bus.register(this);
 	}
 
@@ -62,6 +70,28 @@ public class AdminFeature {
 		if (event.getCommand().equals("RAW")) {
 			if (!event.getArguments().isEmpty()) {
 				bus.post(new IRCSendRaw(event.getArguments().toString()));
+			}
+		}
+
+		if (event.getCommand().equals("JOIN")) {
+			if (event.getArguments().size() == 1) {
+				bus.post(new IRCSendJoin(control.getChannel(event
+						.getArguments().get(0))));
+			}
+		}
+
+		if (event.getCommand().equals("PART")) {
+			if (event.getArguments().size() == 1) {
+				bus.post(new IRCSendPart(control.getChannel(event
+						.getArguments().get(0))));
+			}
+		}
+
+		if (event.getCommand().equals("SAY")) {
+			if (event.getArguments().size() > 1) {
+				bus.post(new IRCSendMessage(control.getTarget(event
+						.getArguments().get(0)), event.getArguments().toString(
+						1)));
 			}
 		}
 	}
