@@ -35,8 +35,9 @@ import com.vectorcat.irc.event.IRCServerConnect;
 import com.vectorcat.irc.event.recv.IRCRecvChannelMessage;
 import com.vectorcat.irc.event.recv.IRCRecvCommand;
 import com.vectorcat.irc.event.recv.IRCRecvJoin;
-import com.vectorcat.irc.event.recv.IRCRecvNameReply;
 import com.vectorcat.irc.event.recv.IRCRecvNickChange;
+import com.vectorcat.irc.event.recv.IRCRecvPart;
+import com.vectorcat.irc.event.recv.IRCRecvQuit;
 
 @Singleton
 public class LastSeenFeature {
@@ -80,7 +81,6 @@ public class LastSeenFeature {
 	private void joinUser(User user, Channel channel) {
 		UserEntry entry = getEntry(user, channel);
 		entry.lastJoin = System.currentTimeMillis();
-		entry.lastUpdate = entry.lastJoin;
 	}
 
 	@Subscribe
@@ -127,30 +127,49 @@ public class LastSeenFeature {
 							new Function<UserEntry, String>() {
 								@Override
 								public String apply(UserEntry entry) {
-									String status;
-									if (entry.getLastJoin() == -1
-											&& entry.getLastPart() == -1) {
-										status = "Active "
-												+ p.format(new Date(entry
-														.getLastUpdate()))
+									long lastJoin = entry.getLastJoin();
+									boolean join = lastJoin != -1;
+									String fJoin = p.format(new Date(lastJoin));
+
+									long lastPart = entry.getLastPart();
+									boolean part = lastPart != -1
+											&& lastPart > lastJoin;
+									String fPart = p.format(new Date(lastPart));
+
+									long lastUpdate = entry.getLastUpdate();
+									boolean update = lastUpdate != -1;
+									String fUpdate = p.format(new Date(
+											lastUpdate));
+
+									String status = "[INVALID] J=" + fJoin
+											+ ", P=" + fPart + ", U=" + fUpdate;
+
+									if (!join && !part && update) {
+										status = "Activity seen " + fUpdate
 												+ ".";
-									} else if (entry.getLastJoin() > entry
-											.getLastPart()) {
-										status = "Active "
-												+ p.format(new Date(entry
-														.getLastUpdate()))
-												+ ", been on since "
-												+ p.format(new Date(entry
-														.getLastJoin())) + ".";
-									} else {
-										status = "Last Seen "
-												+ p.format(new Date(entry
-														.getLastUpdate()))
-												+ ", was on since "
-												+ p.format(new Date(entry
-														.getLastJoin())) + ".";
+
+									} else if (part && !update) {
+										status = "Left " + fPart + ".";
+
+									} else if (part && update) {
+										status = "Left " + fPart
+												+ ", activity seen " + fUpdate
+												+ ".";
+
+									} else if (join && !part && !update) {
+										status = "Joined " + fJoin + ".";
+
+									} else if (join && !part && update) {
+										status = "Joined " + fJoin
+												+ ", activity seen " + fUpdate
+												+ ".";
+
 									}
-									return entry.getUser() + ": " + status;
+
+									return String.format("%-30s",
+											entry.getUser() + ":").replace(' ',
+											'.')
+											+ " " + status;
 								}
 
 							}));
@@ -159,7 +178,7 @@ public class LastSeenFeature {
 			try {
 				url = longMessageSolution.provideSolution(statuses,
 						"User Report in " + channel + " as of " + new Date());
-				channel.reply(event.getUser(), "User Report: " + url);
+				channel.reply(event.getUser(), url.toString());
 			} catch (IOException e) {
 				channel.reply(event.getUser(),
 						"Something broke. [" + e.getMessage() + "] :(");
@@ -196,10 +215,14 @@ public class LastSeenFeature {
 	}
 
 	@Subscribe
-	// Happens on my channel join
-	public void onNameReply(IRCRecvNameReply event) {
-		for (User user : event.getUsersAndPrefixes().keySet()) {
-			updateUser(user, event.getChannel());
+	public void onPart(IRCRecvPart event) {
+		partUser(event.getUser(), event.getChannel());
+	}
+
+	@Subscribe
+	public void onQuit(IRCRecvQuit event) {
+		for (Channel channel : event.getUser().getChannels()) {
+			partUser(event.getUser(), channel);
 		}
 	}
 
@@ -214,7 +237,6 @@ public class LastSeenFeature {
 	private void partUser(User user, Channel channel) {
 		UserEntry entry = getEntry(user, channel);
 		entry.lastPart = System.currentTimeMillis();
-		entry.lastUpdate = entry.lastPart;
 	}
 
 	private void updateUser(User user, Channel channel) {

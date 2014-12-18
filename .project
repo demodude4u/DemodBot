@@ -3,6 +3,7 @@
 	<name>DemodBot</name>
 	<comment></comment>
 	<projects>
+		<project>IRCEventBus</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
