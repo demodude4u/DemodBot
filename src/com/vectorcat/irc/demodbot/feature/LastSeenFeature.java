@@ -23,7 +23,6 @@ import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.vectorcat.irc.Channel;
-import com.vectorcat.irc.IRCControl;
 import com.vectorcat.irc.IRCState;
 import com.vectorcat.irc.User;
 import com.vectorcat.irc.demodbot.event.AdminCommand;
@@ -52,7 +51,6 @@ public class LastSeenFeature {
 		private long lastJoin = -1;
 	}
 
-	private final IRCControl control;
 	private final IRCState state;
 
 	private final LongMessageSolution longMessageSolution;
@@ -62,9 +60,8 @@ public class LastSeenFeature {
 
 	@Inject
 	LastSeenFeature(AdminFeature adminFeature, HelpFeature helpFeature,
-			EventBus bus, IRCControl control, IRCState state,
+			EventBus bus, IRCState state,
 			LongMessageSolution longMessageSolution) {
-		this.control = control;
 		this.state = state;
 		this.longMessageSolution = longMessageSolution;
 		bus.register(this);

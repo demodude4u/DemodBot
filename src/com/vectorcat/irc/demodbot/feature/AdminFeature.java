@@ -46,15 +46,16 @@ public class AdminFeature {
 
 	@Subscribe
 	public void onCommand(IRCRecvCommand event) {
-		if (!adminUsers.contains(event.getUser())) {
-			return;
+		if (adminUsers.contains(event.getUser())) {
+			bus.post(new AdminCommand(event.getTarget(), event.getUser(), event
+					.getLogin(), event.getHostname(), event.getRawMessage(),
+					event.getMessage(), event.isDirectedAtMe(), event
+							.getCommand(), event.getArguments()));
 		}
+	}
 
-		bus.post(new AdminCommand(event.getTarget(), event.getUser(), event
-				.getLogin(), event.getHostname(), event.getRawMessage(), event
-				.getMessage(), event.isDirectedAtMe(), event.getCommand(),
-				event.getArguments()));
-
+	@Subscribe
+	public void onAdminCommand(AdminCommand event) {
 		if (event.getCommand().equals("MUTE")) {
 			control.mute();
 		}
