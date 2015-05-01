@@ -2,6 +2,7 @@ package com.vectorcat.irc.demodbot.feature;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Optional;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -68,15 +69,27 @@ public class WolframFeature {
 				} else {
 					Builder<String> message = ImmutableList.builder();
 
+					Optional<String> resultMessage = Optional.empty();
+
 					for (WAPod pod : result.getPods()) {
 						if (!pod.isError()) {
 							if (pod.getSubpods().length == 1
 									&& pod.getSubpods()[0].getContents().length == 1
 									&& pod.getSubpods()[0].getContents()[0] instanceof WAPlainText) {
-								message.add(pod.getTitle()
+
+								String singleLine = pod.getTitle()
 										+ ": "
 										+ ((WAPlainText) pod.getSubpods()[0]
-												.getContents()[0]).getText());
+												.getContents()[0]).getText();
+
+								if (pod.getTitle().equals("Result")) {
+									resultMessage = Optional
+											.of(((WAPlainText) pod.getSubpods()[0]
+													.getContents()[0])
+													.getText());
+								}
+
+								message.add(singleLine);
 							} else {
 								message.add(pod.getTitle() + ": ");
 								for (WASubpod subpod : pod.getSubpods()) {
@@ -94,22 +107,18 @@ public class WolframFeature {
 
 					ImmutableList<String> messageStrings = message.build();
 
-					if (messageStrings.size() <= 5) {
-						for (String messageLine : messageStrings) {
-							event.getTarget().reply(event.getUser(),
-									messageLine);
-						}
-					} else {
-						URL url;
-						try {
-							url = longMessageSolution.provideSolution(
-									messageStrings, "Wolfram|Alpha: " + input);
-							event.getTarget().reply(event.getUser(),
-									url.toString());
-						} catch (IOException e) {
-							event.getTarget().reply(event.getUser(),
-									"Something broke: " + e.getMessage());
-						}
+					URL url;
+					try {
+						url = longMessageSolution.provideSolution(
+								messageStrings, "Wolfram|Alpha: " + input);
+						event.getTarget().reply(
+								event.getUser(),
+								url.toString()
+										+ resultMessage.map(s -> " | " + s)
+												.orElse(""));
+					} catch (IOException e) {
+						event.getTarget().reply(event.getUser(),
+								"Something broke: " + e.getMessage());
 					}
 				}
 
